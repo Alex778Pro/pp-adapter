@@ -1,14 +1,25 @@
 version: '3.8'
 services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: users_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   zookeeper:
     image: wurstmeister/zookeeper
-    container_name: zookeeper3
+    container_name: zookeeper4
     ports:
       - "2181:2181"
 
   kafka:
     image: wurstmeister/kafka
-    container_name: kafka3
+    container_name: kafka4
     depends_on:
       - zookeeper
     ports:

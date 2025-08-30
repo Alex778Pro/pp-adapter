@@ -16,7 +16,7 @@ public class ScheduledTasks {
     @Scheduled(cron = "0 */1 * * * *", zone = "Europe/Vilnius")
     public void processClients(){
         log.info("Processing Clients");
-        //smsMessageKafkaService.sendMessage(new SmsMessage());
         userService.getAllClients();
+        //smsMessageKafkaService.sendMessage(new SmsMessage());
     }
 }

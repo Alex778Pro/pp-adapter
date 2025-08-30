@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
-@FeignClient(name = "usersApiClient", url = "http://localhost:8081", configuration = FeignConfig.class)
+@FeignClient(name = "usersApiClient", url = "${spring.api.url}", configuration = FeignConfig.class)
 public interface UsersApiClient {
     @PostMapping("/api/v1/getClient")
-    List<ClientsInfo> getClient();
+    List<ClientsInfo> getClients();
 
     @PostMapping("/api/v1/getClient/{id}")
     ClientsInfo getClientById(@PathVariable("id") String clientId);
