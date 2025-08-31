@@ -1,6 +1,5 @@
 package com.example.pp.service;
 
-import com.example.pp.entity.SmsMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,13 +9,11 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 public class ScheduledTasks {
-    private final UserService userService;
-    private final SmsMessageKafkaService smsMessageKafkaService;
+    private final ClientService userService;
 
-    @Scheduled(cron = "0 */1 * * * *", zone = "Europe/Vilnius")
+    @Scheduled(cron = "0 */1 * * * *", zone = "Europe/Moscow")
     public void processClients(){
         log.info("Processing Clients");
         userService.getAllClients();
-        //smsMessageKafkaService.sendMessage(new SmsMessage());
     }
 }

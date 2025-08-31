@@ -1,7 +1,7 @@
 package com.example.pp.mapper;
 
 import com.example.pp.entity.Client;
-import com.example.pp.entity.ClientsInfo;
+import com.example.pp.entity.ClientInfo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -14,9 +14,9 @@ public interface ClientMapper {
     @Mapping(target = "birthDate", source = "birthday")
     @Mapping(target = "phone", source = "phone")
     @Mapping(target = "messageSend", constant = "false")
-    Client toClient(ClientsInfo clientsInfo);
+    Client toClient(ClientInfo clientsInfo);
 
-    default String getFullName(ClientsInfo info) {
+    default String getFullName(ClientInfo info) {
         return info.getSurname() + " " +
                 info.getName() + " " +
                 info.getMiddleName();

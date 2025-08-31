@@ -2,7 +2,7 @@ package com.example.pp.service;
 
 import com.example.pp.client.UsersApiClient;
 import com.example.pp.entity.Client;
-import com.example.pp.entity.ClientsInfo;
+import com.example.pp.entity.ClientInfo;
 import com.example.pp.mapper.ClientMapper;
 import com.example.pp.repository.ClientRepository;
 import jakarta.transaction.Transactional;
@@ -20,17 +20,20 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class UserService {
+public class ClientService {
     private final UsersApiClient usersApiClient;
     private final ClientRepository clientRepository;
+    private final SmsMessageKafkaService smsMessageKafkaService;
 
-    public List<ClientsInfo> getAllClients() {
-        List<ClientsInfo> clients = usersApiClient.getClients().stream()
+    //Get all clients Open Api
+    public List<ClientInfo> getAllClients() {
+        List<ClientInfo> clients = usersApiClient.getClients().stream()
                 .filter(this::matchesFilter)
                 .toList();
-        for (ClientsInfo client : clients) {
+        for (ClientInfo client : clients) {
             try {
                 log.info("Save client: " + saveClient(client));
+                smsMessageKafkaService.sendNotificationIfAllowed(client);
             } catch (ResponseStatusException e) {
                 log.info("Save client failed: " + e.getMessage());
             }
@@ -38,19 +41,21 @@ public class UserService {
         return clients;
     }
 
-    public ResponseEntity<ClientsInfo> getClientById(String clientId) {
-        ClientsInfo client = usersApiClient.getClientById(clientId);
+    //Get client by clientID OpenApi
+    public ResponseEntity<ClientInfo> getClientById(String clientId) {
+        ClientInfo client = usersApiClient.getClientById(clientId);
         if (matchesFilter(client)) {
             return ResponseEntity.ok(client);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+    //Save client is DB
     @Transactional
-    public Client saveClient(ClientsInfo clientInfo) {
+    public Client saveClient(ClientInfo clientInfo) {
         Client client = ClientMapper.INSTANCE.toClient(clientInfo);
         Optional<Client> existingClient = clientRepository.findByPhone(clientInfo.getPhone());
-        if (!existingClient.isPresent()) {
+        if (existingClient.isEmpty()) {
             return clientRepository.save(client);
         } else {
             log.error("Client with Phone {} already exists", client.getPhone());
@@ -59,7 +64,7 @@ public class UserService {
     }
 
     //Filter
-    private boolean matchesFilter(ClientsInfo client) {
+    private boolean matchesFilter(ClientInfo client) {
         char lastCharPhoneClient = client.getPhone().charAt(client.getPhone().length() - 1);
         int birthdayMonth = client.getBirthday().getMonthValue();
         return lastCharPhoneClient == '7' && birthdayMonth == LocalDate.now().getMonthValue();

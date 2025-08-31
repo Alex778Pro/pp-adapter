@@ -1,7 +1,7 @@
 package com.example.pp.controller;
 
-import com.example.pp.entity.ClientsInfo;
-import com.example.pp.service.UserService;
+import com.example.pp.entity.ClientInfo;
+import com.example.pp.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,15 +15,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/clients")
 public class UserController {
-    private final UserService userService;
+    private final ClientService userService;
 
     @GetMapping
-    public List<ClientsInfo> getAllClients() {
+    public List<ClientInfo> getAllClients() {
         return userService.getAllClients();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClientsInfo> getClientById(@PathVariable("id") String clientId) {
+    public ResponseEntity<ClientInfo> getClientById(@PathVariable("id") String clientId) {
         return userService.getClientById(clientId);
     }
 }
