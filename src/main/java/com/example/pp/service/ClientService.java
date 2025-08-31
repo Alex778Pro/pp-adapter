@@ -33,9 +33,13 @@ public class ClientService {
         for (ClientInfo client : clients) {
             try {
                 log.info("Save client: " + saveClient(client));
-                smsMessageKafkaService.sendNotificationIfAllowed(client);
             } catch (ResponseStatusException e) {
                 log.info("Save client failed: " + e.getMessage());
+            }
+            try {
+                smsMessageKafkaService.sendNotificationIfAllowed(client);
+            }catch (Exception e) {
+                log.info("Send notification failed: " + e.getMessage());
             }
         }
         return clients;
@@ -58,7 +62,7 @@ public class ClientService {
         if (existingClient.isEmpty()) {
             return clientRepository.save(client);
         } else {
-            log.error("Client with Phone {} already exists", client.getPhone());
+            log.info("Client with Phone {} already exists", client.getPhone());
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Client with Phone " + client.getPhone() + " already exists");
         }
     }

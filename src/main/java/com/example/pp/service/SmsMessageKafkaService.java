@@ -3,6 +3,7 @@ package com.example.pp.service;
 import com.example.pp.entity.Client;
 import com.example.pp.entity.ClientInfo;
 import com.example.pp.entity.SmsMessage;
+import com.example.pp.mapper.ClientInfoMapper;
 import com.example.pp.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -30,16 +32,19 @@ public class SmsMessageKafkaService {
     private void sendMessage(SmsMessage message) {
         kafkaTemplate.send(defaultTopic, message);
     }
+
     public void sendNotificationIfAllowed(ClientInfo clientInfo) {
-        if(isRangeTime()){
+        if (isRangeTime()) {
             sendSMSNotification(clientInfo);
             markClientAsNotified(clientInfo.getPhone());
+            pendingNotificationClients();
         }
     }
+
     //Notification kafka
     private void sendSMSNotification(ClientInfo clientInfo) {
         String message = String.format("%s %s, в этом месяце для вас действует скидка %d%%",
-                clientInfo.getName(), clientInfo.getMiddleName(), discount);
+                clientInfo.getName(), clientInfo.getSurname(), discount);
 
         SmsMessage sms = new SmsMessage(clientInfo.getPhone(), message);
 
@@ -50,6 +55,19 @@ public class SmsMessageKafkaService {
             log.error("Error sending SMS to phone: {}", clientInfo.getPhone(), e);
         }
     }
+
+    //Pending client
+    private void pendingNotificationClients() {
+        List<Client> clients = clientRepository.findByMessageSendFalse();
+        for (Client client : clients) {
+            ClientInfo clientInfo = ClientInfoMapper.INSTANCE.toClientInfo(client);
+            if(clientInfo != null) {
+                sendNotificationIfAllowed(clientInfo);
+                markClientAsNotified(clientInfo.getPhone());
+            }
+        }
+    }
+
     //Mark notification
     private void markClientAsNotified(String phone) {
         Optional<Client> client = clientRepository.findByPhone(phone);
@@ -58,6 +76,7 @@ public class SmsMessageKafkaService {
             clientRepository.save(client.get());
         }
     }
+
     //Range time
     private boolean isRangeTime() {
         int hour = LocalDate.now().atStartOfDay().getHour();

@@ -21,4 +21,8 @@ public interface ClientMapper {
                 info.getName() + " " +
                 info.getMiddleName();
     }
+
+    @Mapping(target = "phone", source = "phone")
+    ClientInfo toClientInfo(Client client);
+
 }
