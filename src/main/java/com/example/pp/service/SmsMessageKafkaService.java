@@ -37,9 +37,26 @@ public class SmsMessageKafkaService {
         if (isRangeTime()) {
             sendSMSNotification(clientInfo);
             markClientAsNotified(clientInfo.getPhone());
-            pendingNotificationClients();
         }
     }
+
+    //Pending client
+    public void pendingNotificationClients() {
+        log.info("Pending notification clients");
+        List<Client> clients = clientRepository.findByMessageSendFalse();
+        if (!clients.isEmpty()) {
+            for (Client client : clients) {
+                ClientInfo clientInfo = ClientInfoMapper.INSTANCE.toClientInfo(client);
+                if (clientInfo != null) {
+                    sendNotificationIfAllowed(clientInfo);
+                    markClientAsNotified(clientInfo.getPhone());
+                }
+            }
+        } else {
+            log.info("No pending notification client found");
+        }
+    }
+
 
     //Notification kafka
     private void sendSMSNotification(ClientInfo clientInfo) {
@@ -53,18 +70,6 @@ public class SmsMessageKafkaService {
             log.info("SMS sent to phone: {}", clientInfo.getPhone());
         } catch (Exception e) {
             log.error("Error sending SMS to phone: {}", clientInfo.getPhone(), e);
-        }
-    }
-
-    //Pending client
-    private void pendingNotificationClients() {
-        List<Client> clients = clientRepository.findByMessageSendFalse();
-        for (Client client : clients) {
-            ClientInfo clientInfo = ClientInfoMapper.INSTANCE.toClientInfo(client);
-            if(clientInfo != null) {
-                sendNotificationIfAllowed(clientInfo);
-                markClientAsNotified(clientInfo.getPhone());
-            }
         }
     }
 

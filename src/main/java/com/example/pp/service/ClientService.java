@@ -33,13 +33,14 @@ public class ClientService {
         for (ClientInfo client : clients) {
             try {
                 log.info("Save client: " + saveClient(client));
+                smsMessageKafkaService.sendNotificationIfAllowed(client);
             } catch (ResponseStatusException e) {
                 log.info("Save client failed: " + e.getMessage());
             }
             try {
-                smsMessageKafkaService.sendNotificationIfAllowed(client);
+                smsMessageKafkaService.pendingNotificationClients();
             }catch (Exception e) {
-                log.info("Send notification failed: " + e.getMessage());
+                log.info("Notification client failed: " + e.getMessage());
             }
         }
         return clients;
