@@ -1,8 +1,8 @@
+server:
+  port: 8080
 spring:
   api:
     url: http://localhost:8081
-  server:
-    port: 8080
   sms:
     discount: 10
   kafka:

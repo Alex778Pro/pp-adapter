@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 public class ScheduledTasks {
     private final ClientService userService;
 
-    @Scheduled(cron = "0 */1 * * * *", zone = "Europe/Moscow")
-    public void processClients(){
+    @Scheduled(cron = "0 0 * * * *", zone = "Europe/Moscow")
+    public void processClients() {
         log.info("Processing Clients");
         userService.getAllClients();
     }

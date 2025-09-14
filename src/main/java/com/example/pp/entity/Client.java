@@ -26,5 +26,4 @@ public class Client {
     private LocalDate birthDate;
     @Column(name = "messagesend")
     private boolean messageSend;
-
 }

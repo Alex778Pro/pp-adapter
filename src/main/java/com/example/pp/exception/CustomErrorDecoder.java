@@ -1,4 +1,4 @@
-package com.example.pp.exeption;
+package com.example.pp.exception;
 
 import feign.Response;
 import feign.codec.ErrorDecoder;

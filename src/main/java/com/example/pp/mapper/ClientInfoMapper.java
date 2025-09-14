@@ -9,10 +9,8 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface ClientInfoMapper {
-    ClientInfoMapper INSTANCE = Mappers.getMapper(ClientInfoMapper.class);
-
-    @Mapping(target = "name",expression = "java(getNameClient(client))")
-    @Mapping(target = "surname",expression = "java(getSurnameClient(client))")
+    @Mapping(target = "name", expression = "java(getNameClient(client))")
+    @Mapping(target = "surname", expression = "java(getSurnameClient(client))")
     @Mapping(target = "phone", source = "phone")
     ClientInfo toClientInfo(Client client);
 
@@ -20,7 +18,7 @@ public interface ClientInfoMapper {
         String[] parsFullName = client.getFullName().split(" ");
         if (parsFullName.length > 2) {
             return parsFullName[1];
-        }else {
+        } else {
             return "nullName";
         }
     }
@@ -29,11 +27,8 @@ public interface ClientInfoMapper {
         String[] parsFullName = client.getFullName().split(" ");
         if (parsFullName.length > 1) {
             return parsFullName[0];
-        }else {
+        } else {
             return "nullSurname";
         }
     }
-
-
-
 }

@@ -15,5 +15,4 @@ public interface UsersApiClient {
 
     @PostMapping("/api/v1/getClient/{id}")
     ClientInfo getClientById(@PathVariable("id") String clientId);
-
 }

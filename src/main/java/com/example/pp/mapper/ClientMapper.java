@@ -8,7 +8,6 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface ClientMapper {
-    ClientMapper INSTANCE = Mappers.getMapper(ClientMapper.class);
 
     @Mapping(target = "fullName", expression = "java(getFullName(clientsInfo))")
     @Mapping(target = "birthDate", source = "birthday")
@@ -21,8 +20,4 @@ public interface ClientMapper {
                 info.getName() + " " +
                 info.getMiddleName();
     }
-
-    @Mapping(target = "phone", source = "phone")
-    ClientInfo toClientInfo(Client client);
-
 }

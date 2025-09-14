@@ -12,6 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +29,7 @@ public class SmsMessageKafkaService {
 
     private final KafkaTemplate<String, SmsMessage> kafkaTemplate;
     private final ClientRepository clientRepository;
+    private final ClientInfoMapper clientInfoMapper;
 
     private void sendMessage(SmsMessage message) {
         kafkaTemplate.send(defaultTopic, message);
@@ -35,8 +37,9 @@ public class SmsMessageKafkaService {
 
     public void sendNotificationIfAllowed(ClientInfo clientInfo) {
         if (isRangeTime()) {
-            sendSMSNotification(clientInfo);
-            markClientAsNotified(clientInfo.getPhone());
+            boolean sentSuccessfully = sendSMSNotification(clientInfo);
+            if (sentSuccessfully)
+                markClientAsNotified(clientInfo.getPhone());
         }
     }
 
@@ -46,7 +49,7 @@ public class SmsMessageKafkaService {
         List<Client> clients = clientRepository.findByMessageSendFalse();
         if (!clients.isEmpty()) {
             for (Client client : clients) {
-                ClientInfo clientInfo = ClientInfoMapper.INSTANCE.toClientInfo(client);
+                ClientInfo clientInfo = clientInfoMapper.toClientInfo(client);
                 if (clientInfo != null) {
                     sendNotificationIfAllowed(clientInfo);
                     markClientAsNotified(clientInfo.getPhone());
@@ -59,7 +62,7 @@ public class SmsMessageKafkaService {
 
 
     //Notification kafka
-    private void sendSMSNotification(ClientInfo clientInfo) {
+    public boolean sendSMSNotification(ClientInfo clientInfo) {
         String message = String.format("%s %s, в этом месяце для вас действует скидка %d%%",
                 clientInfo.getName(), clientInfo.getSurname(), discount);
 
@@ -68,13 +71,15 @@ public class SmsMessageKafkaService {
         try {
             sendMessage(sms);
             log.info("SMS sent to phone: {}", clientInfo.getPhone());
+            return true;
         } catch (Exception e) {
             log.error("Error sending SMS to phone: {}", clientInfo.getPhone(), e);
         }
+        return false;
     }
 
     //Mark notification
-    private void markClientAsNotified(String phone) {
+    public void markClientAsNotified(String phone) {
         Optional<Client> client = clientRepository.findByPhone(phone);
         if (client.isPresent()) {
             client.get().setMessageSend(true);
@@ -83,8 +88,8 @@ public class SmsMessageKafkaService {
     }
 
     //Range time
-    private boolean isRangeTime() {
-        int hour = LocalDate.now().atStartOfDay().getHour();
+    public boolean isRangeTime() {
+        int hour = LocalDate.now().atStartOfDay(ZoneId.of("Europe/Moscow")).getHour();
         return hour < rangeHour;
     }
 }

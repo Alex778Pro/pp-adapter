@@ -25,6 +25,7 @@ public class ClientService {
     private final UsersApiClient usersApiClient;
     private final ClientRepository clientRepository;
     private final SmsMessageKafkaService smsMessageKafkaService;
+    private final ClientMapper clientMapper;
 
     //Get all clients Open Api
     public List<ClientInfo> getAllClients() {
@@ -38,11 +39,11 @@ public class ClientService {
             } catch (Exception e) {
                 log.info("Save client failed: " + e.getMessage());
             }
-            try {
-                smsMessageKafkaService.pendingNotificationClients();
-            }catch (Exception e) {
-                log.info("Notification client failed: " + e.getMessage());
-            }
+        }
+        try {
+            smsMessageKafkaService.pendingNotificationClients();
+        } catch (Exception e) {
+            log.info("Notification client failed: " + e.getMessage());
         }
         return clients;
     }
@@ -56,10 +57,11 @@ public class ClientService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
     //Save client is DB
     @Transactional
     public Client saveClient(ClientInfo clientInfo) {
-        Client client = ClientMapper.INSTANCE.toClient(clientInfo);
+        Client client = clientMapper.toClient(clientInfo);
         Optional<Client> existingClient = clientRepository.findByPhone(clientInfo.getPhone());
         if (existingClient.isEmpty()) {
             return clientRepository.save(client);
@@ -71,8 +73,11 @@ public class ClientService {
 
     //Filter
     private boolean matchesFilter(ClientInfo client) {
-        char lastCharPhoneClient = client.getPhone().charAt(client.getPhone().length() - 1);
-        int birthdayMonth = client.getBirthday().getMonthValue();
-        return lastCharPhoneClient == '7' && birthdayMonth == LocalDate.now().getMonthValue();
+        if (client != null) {
+            char lastCharPhoneClient = client.getPhone().charAt(client.getPhone().length() - 1);
+            int birthdayMonth = client.getBirthday().getMonthValue();
+            return lastCharPhoneClient == '7' && birthdayMonth == LocalDate.now().getMonthValue();
+        }
+        return false;
     }
 }
