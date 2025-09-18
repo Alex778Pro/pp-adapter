@@ -4,7 +4,6 @@ import com.example.pp.entity.Client;
 import com.example.pp.entity.ClientInfo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 
 @Mapper(componentModel = "spring")

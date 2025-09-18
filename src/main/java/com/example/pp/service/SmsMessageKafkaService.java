@@ -31,7 +31,7 @@ public class SmsMessageKafkaService {
     private final ClientRepository clientRepository;
     private final ClientInfoMapper clientInfoMapper;
 
-    private void sendMessage(SmsMessage message) {
+    public void sendMessage(SmsMessage message) {
         kafkaTemplate.send(defaultTopic, message);
     }
 
@@ -52,7 +52,6 @@ public class SmsMessageKafkaService {
                 ClientInfo clientInfo = clientInfoMapper.toClientInfo(client);
                 if (clientInfo != null) {
                     sendNotificationIfAllowed(clientInfo);
-                    markClientAsNotified(clientInfo.getPhone());
                 }
             }
         } else {
@@ -88,7 +87,7 @@ public class SmsMessageKafkaService {
     }
 
     //Range time
-    public boolean isRangeTime() {
+    private boolean isRangeTime() {
         int hour = LocalDate.now().atStartOfDay(ZoneId.of("Europe/Moscow")).getHour();
         return hour < rangeHour;
     }
